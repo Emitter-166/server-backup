@@ -1,5 +1,6 @@
 import { Collection, GuildTextBasedChannel, NonThreadGuildBasedChannel } from "discord.js";
 import { client } from "..";
+import consola from "consola";
 
 export const fetch_channels = async (guildId: string) => {
     try{
@@ -17,7 +18,7 @@ export const fetch_channels = async (guildId: string) => {
 
         return final;
     }catch(err: any){
-        console.log("Err at /services/channelServices.ts/fetch_channels()");
+        consola.error("Err at /services/channelServices.ts/fetch_channels()");
         console.log(err);
         throw new Error(err.message);
     }

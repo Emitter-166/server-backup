@@ -6,7 +6,8 @@
   "scripts": {
     "build": "npx tsc",
     "dev": "nodemon .",
-    "start": "node ."
+    "start": "node .",
+    "decrypt": "node decryptDb.js"
   },
   "keywords": [
     "Discord Server Backup",
@@ -19,6 +20,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "consola": "^3.2.3",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "sequelize": "^6.35.2",
