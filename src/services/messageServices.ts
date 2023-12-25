@@ -86,7 +86,6 @@ export const save_msg_to_db = async (raw_data: ExtractedContent) => {
         }
 
         //extracing & encrypting attachment data
-        const attachment_datas: AttachmentData[] = [];
 
         for(let attachment of attachments){
             let data: AttachmentData = {
@@ -94,14 +93,12 @@ export const save_msg_to_db = async (raw_data: ExtractedContent) => {
                 messageId,
                 data: encrypt(attachment[1])
             };
-            attachment_datas.push(data);
+            await attachments_model.create(data); //if you are wondering why we are not using a bulkCreate, because the query can sometimes exceed javascript string length limit
         }
 
         //saving it to DB
 
         await messages_model.create(message_data)
-
-        await attachments_model.bulkCreate(attachment_datas);
     }catch(err: any){
         consola.error("Err at /services/messageServices.ts/save_msg_to_db()");
         console.log(err);

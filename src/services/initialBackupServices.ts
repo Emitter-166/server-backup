@@ -60,7 +60,10 @@ export const initial_backup_process = async () => {
             let fetched_messages  = new Collection<string,Message>();;
             
             do{
+                if(!channel.messages) break; //this means the channel is a category channel
+
                 fetched_messages = !last_msg ? await channel.messages.fetch({limit: 100}) : await channel.messages.fetch({limit: 100, before: last_msg.id});
+                if(fetched_messages.size === 0) break; //incase there is nothing on the response, since the while statement cant pick it up this iteration. maybe I should use a regular while loop, but too lazy
 
                 processed_total += fetched_messages.size;
         
