@@ -1,3 +1,0 @@
-Your decrypted data will be here
-
-npm run decrypt

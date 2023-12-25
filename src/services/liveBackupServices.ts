@@ -2,6 +2,7 @@ import { Message } from "discord.js";
 import { guild_id, live_backup } from "../config/config";
 import { get_msg_content, save_msg_to_db } from "./messageServices";
 import consola from "consola";
+import fs from 'fs/promises';
 
 export const live_backup_msg_handler = async (msg: Message) => {
     try{

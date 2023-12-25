@@ -38,6 +38,11 @@ const safe_question = async (query) => {
 
     try{
         await fs.access('server.db', fs.constants.F_OK);
+
+        //cleaning previous data
+        await fs.rm('./decrypted', { recursive: true, force: true });
+        await fs.mkdir('./decrypted/attachments', { recursive: true });
+        
         await fs.copyFile('./server.db', './decrypted/server.db');
         consola.warn("Don't close terminal...")
 
@@ -64,7 +69,7 @@ const safe_question = async (query) => {
 
         if(index%10===0) consola.success(`Decrypted ${index} messages`)
     }
-    if(index%10!==0) consola.success(`Decrypted ${index} attachments`);
+    if(index%10!==0) consola.success(`Decrypted ${index} messages`);
 
     //decrypting the attachments
     const all_attachments = await attachments_model.findAll();
@@ -77,21 +82,23 @@ const safe_question = async (query) => {
         const data = await decrypt(encrypted_data, pass);
 
         await model.update({data});
+        await fs.writeFile(`./decrypted/attachments/${model.dataValues.name}`, data);
+
         if(index%10===0) consola.success(`Decrypted ${index} attachments`);
     }
     if(index%10!==0) consola.success(`Decrypted ${index} attachments`);
 
-    consola.success("Done Decrypting! Please check decrypted-server.db");
+    consola.success("Done Decrypting! Please check the decrypted directory.");
 })()
 
-const decrypt = async (text,pass,is_img) => {
+const decrypt = async (text,pass) => {
     const key = crypto.scryptSync(pass, 'salt', 32);
     const decipher = crypto.createDecipheriv('aes256', key, Buffer.alloc(16, 0));
 
     let original = decipher.update(Buffer.from(text, 'hex'));
     original = Buffer.concat([original, decipher.final()]);
 
-    return is_img ? original.toString('base64') : original.toString('utf8');
+    return original;
 }
 
 const initialize_sequelize = async () => {
@@ -115,7 +122,7 @@ const initialize_sequelize = async () => {
         type: Sequelize.INTEGER
         },
         text: {
-        type: Sequelize.STRING
+        type: Sequelize.BLOB
         },
         attachments: {
         type: Sequelize.STRING

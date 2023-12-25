@@ -31,12 +31,14 @@ export const get_msg_content = async (msg: Message) => {
         //fetching attachments
         const attachments_raw = msg.attachments.map(v => v);        
         for(let attachment of attachments_raw){
-
+            
             const attachment_data = await (await fetch(attachment.url)).arrayBuffer();
             if(!attachment_data) continue;
 
             const buffer = Buffer.from(attachment_data);
-            const name = `${attachment.name}__${Date.now()}`
+            const [raw_name, extension] = attachment.name.split(".");
+
+            const name = `${raw_name}__${Date.now()}.${extension}`;
 
            data.attachments.set(name, buffer);
         }
