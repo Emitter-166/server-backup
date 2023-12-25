@@ -10,3 +10,5 @@ export const live_backup = Boolean(process.env.LIVE_BACKUP?.trim().toLowerCase()
 
 export const ignore_users = process.env.IGNORE_USERS?.split(",").map(v => v.trim()) || [];
 export const ignore_channels = process.env.IGNORE_CHANNELS?.split(",").map(v => v.trim()) || [];
+
+export const backup_db = Boolean(process.env.BACKUP_DB);
