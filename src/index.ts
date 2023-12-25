@@ -4,6 +4,7 @@ import { token } from "./config/config";
 import { define_messages } from "./database/models/messages";
 import { define_attachments } from "./database/models/attachments";
 import { message_create_listener } from "./events/messageCreate";
+import { initial_backup_scraper } from "./services/initialBackupServices";
 
 
 
@@ -35,5 +36,5 @@ sequelize.sync({alter: true}).then(async () => {
 });
 
 const main = async () => {
-
+    await initial_backup_scraper();
 }
