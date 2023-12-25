@@ -4,9 +4,18 @@
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx tsc",
+    "dev": "nodemon .",
+    "start": "node ."
   },
-  "keywords": [],
+  "keywords": [
+    "Discord Server Backup",
+    "server backup",
+    "guild backup",
+    "server backup bot",
+    "discord backupper",
+    "backupper"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -14,5 +23,9 @@
     "dotenv": "^16.3.1",
     "sequelize": "^6.35.2",
     "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "typescript": "^5.3.3"
   }
 }
