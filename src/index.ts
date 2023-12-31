@@ -1,6 +1,6 @@
 import { Client, GuildTextBasedChannel, IntentsBitField } from "discord.js";
 import { Sequelize } from "sequelize";
-import { token } from "./config/config";
+import { get_pass_from_user, token } from "./config/config";
 import { define_messages } from "./database/models/messages";
 import { define_attachments } from "./database/models/attachments";
 import { message_create_listener } from "./events/messageCreate";
@@ -32,6 +32,7 @@ export const attachments_model = define_attachments(sequelize);
 
 sequelize.sync({alter: true}).then(async () => {
     console.log("DB synced.");
+    await get_pass_from_user();
     await client.login(token);
 });
 

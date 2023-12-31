@@ -10,7 +10,7 @@ import consola from "consola";
 import { Collection, GuildTextBasedChannel, Message } from "discord.js";
 import { get_msg_content, save_msg_to_db } from "./messageServices";
 import { fetch_channels } from "./channelServices";
-import { guild_id, initial_backup } from "../config/config";
+import { guild_id, initial_backup, initial_backup_worker_count } from "../config/config";
 
 let all_channels: GuildTextBasedChannel[] = [];
 let get_a_channel = () => all_channels.pop();
@@ -18,7 +18,7 @@ let get_a_channel = () => all_channels.pop();
 //stats
 let processed_total = 0;
 let initial_length_of_all_channels = 0;
-let number_of_processes = 3;
+let number_of_processes = initial_backup_worker_count;
 let startedAt = 0;
 
 export const initial_backup_scraper = async () => {

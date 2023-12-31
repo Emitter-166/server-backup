@@ -34,6 +34,7 @@ const safe_question = async (query) => {
 }
 
 (async () => {
+    consola.warn('Please use the SAME password you had entered to run backup. Or else it will not work properly')
     const pass = await safe_question('Enter your password: ')
 
     try{
