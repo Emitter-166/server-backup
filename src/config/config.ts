@@ -26,6 +26,9 @@ export const get_pass_from_user = async () => {
     if(given_pass==='') given_pass = undefined;
 
     password = given_pass;
+
+    consola.success('Password successful')
+    consola.info('You have to enter this exact same password while decrypting DB')
 }
 
 export const initial_backup = Boolean(process.env.INITIAL_BACKUP?.trim().toLocaleLowerCase());
