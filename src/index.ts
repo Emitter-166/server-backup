@@ -5,6 +5,7 @@ import { define_messages } from "./database/models/messages";
 import { define_attachments } from "./database/models/attachments";
 import { message_create_listener } from "./events/messageCreate";
 import { initial_backup_scraper } from "./services/initialBackupServices";
+import consola from "consola";
 
 
 
@@ -30,6 +31,7 @@ export const sequelize = new Sequelize({
 export const messages_model = define_messages(sequelize);
 export const attachments_model = define_attachments(sequelize);
 
+consola.warn('Syncing DB may take a while... please be patient.')
 sequelize.sync({alter: true}).then(async () => {
     console.log("DB synced.");
     await get_pass_from_user();
