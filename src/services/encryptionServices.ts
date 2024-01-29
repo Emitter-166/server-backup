@@ -1,9 +1,8 @@
-import { password } from "../config/config";
+import { key } from "../config/config";
 import crypto from 'crypto';
 
 export const encrypt = (data: Buffer) => {
-    if(!password) return data;
-    const key = crypto.scryptSync(password, 'salt', 32);
+    if(!key) return data;
 
     let cipher = crypto.createCipheriv('aes256', key, Buffer.alloc(16, 0));
 

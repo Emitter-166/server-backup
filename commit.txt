@@ -1,0 +1,5 @@
+1. Added message edit support
+2. Fixed security issue, now it will only hold the key and not the password itself
+3. Made it so that you can still decrypt and get the attachments even when you dont have password
+4. Fixed bug with boolean variables from .env not registering properly
+5. Fixed filename typo example.env => .env.example

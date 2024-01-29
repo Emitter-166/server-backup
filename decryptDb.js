@@ -35,7 +35,8 @@ const safe_question = async (query) => {
 
 (async () => {
     consola.warn('Please use the SAME password you had entered to run backup. Or else it will not work properly')
-    const pass = await safe_question('Enter your password: ')
+    let passAnswer = await safe_question('Enter your password: ');
+    const key = passAnswer ? crypto.scryptSync( passAnswer, 'salt', 32) : undefined;
 
     try{
         await fs.access('server.db', fs.constants.F_OK);
@@ -64,7 +65,7 @@ const safe_question = async (query) => {
     for(let model of all_messages){
         index++;
         let encrypted_text = model.dataValues.text;
-        const text = await decrypt(encrypted_text, pass);
+        const text = await decrypt(encrypted_text, key);
 
         await model.update({text});
 
@@ -80,7 +81,7 @@ const safe_question = async (query) => {
     for (let model of all_attachments){
         index++;
         let encrypted_data = model.dataValues.data;
-        const data = await decrypt(encrypted_data, pass);
+        const data = await decrypt(encrypted_data, key);
 
         await model.update({data});
         await fs.writeFile(`./decrypted/attachments/${model.dataValues.name}`, data);
@@ -92,11 +93,12 @@ const safe_question = async (query) => {
     consola.success("Done Decrypting! Please check the decrypted directory.");
 })()
 
-const decrypt = async (text,pass) => {
-    const key = crypto.scryptSync(pass, 'salt', 32);
+const decrypt = async (text,key) => {
+    if(!key) return text;
     const decipher = crypto.createDecipheriv('aes256', key, Buffer.alloc(16, 0));
 
     let original = decipher.update(Buffer.from(text, 'hex'));
+
     original = Buffer.concat([original, decipher.final()]);
 
     return original;

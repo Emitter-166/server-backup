@@ -6,6 +6,7 @@ import { define_attachments } from "./database/models/attachments";
 import { message_create_listener } from "./events/messageCreate";
 import { initial_backup_scraper } from "./services/initialBackupServices";
 import consola from "consola";
+import { message_update_listener } from "./events/messageEdit";
 
 
 
@@ -19,6 +20,7 @@ client.once('ready', async (client) => {
     
     //adding listeners
     message_create_listener(client);
+    message_update_listener(client);
 
     await main();
 })
@@ -28,6 +30,7 @@ export const sequelize = new Sequelize({
     storage: 'server.db',
     logging: false
 })
+
 export const messages_model = define_messages(sequelize);
 export const attachments_model = define_attachments(sequelize);
 

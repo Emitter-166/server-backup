@@ -105,3 +105,47 @@ export const save_msg_to_db = async (raw_data: ExtractedContent) => {
         throw new Error(err.message);
     }
 }
+
+export const update_msg_to_db = async (raw_data: ExtractedContent) => {
+    try{
+        const {channelId, messageId, userId, time, text, attachments: attachments_raw, thread} = raw_data;
+        
+        //ignoring from configs
+        if(ignore_channels.includes(channelId)) return;
+        if(ignore_users.includes(userId)) return;
+
+        //making sure we have smth to update
+        const previous_message = await messages_model.findOne({where: {messageId}});
+        if(previous_message) {
+            const attachments = Array.from(attachments_raw);
+
+            //extracting & encrypting message data
+            const message_data: MessageData = {
+                channelId,
+                messageId,
+                userId,
+                time,
+                text: encrypt(Buffer.from(text)),
+                attachments: attachments.map(v=> v[0]).join(',')
+            }
+    
+            //extracing & encrypting attachment data
+    
+            for(let attachment of attachments){
+                let data: AttachmentData = {
+                    name: attachment[0],
+                    messageId,
+                    data: encrypt(attachment[1])
+                };
+                await attachments_model.create(data); //if you are wondering why we are not using a bulkCreate, because the query can sometimes exceed javascript string length limit
+            }
+    
+            //updating model
+            await previous_message.update(message_data)
+        };
+    }catch(err: any){
+        consola.error("Err at /services/messageServices.ts/save_msg_to_db()");
+        console.log(err);
+        throw new Error(err.message);
+    }
+}

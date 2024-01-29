@@ -22,7 +22,7 @@ let number_of_processes = initial_backup_worker_count;
 let startedAt = 0;
 
 export const initial_backup_scraper = async () => {
-    try{
+    try{        
         if(!initial_backup) return;
 
         consola.warn("Starting Initial Back Up... Please change configs from .env if you dont want this to happen");
