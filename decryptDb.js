@@ -144,6 +144,21 @@ const initialize_sequelize = async () => {
         }
      }, {timestamps: false})
 
+    sequelize.define('channels', {
+        channelId: {
+         type: Sequelize.STRING
+        },
+        name: {
+         type: Sequelize.STRING
+        },
+        type: {
+         type: Sequelize.INTEGER
+        },
+        parentId: {
+         type: Sequelize.STRING
+        }
+     }, {timestamps: false})
+
     await sequelize.sync({})
 
     return sequelize;

@@ -51,7 +51,10 @@ const safe_question = async (query: string): Promise<string> => {
     });
 
     return new Promise((resolve) => {
-        const stdin = process.openStdin();
+        // `process.openStdin()` is a legacy alias that still exists at runtime but
+        // was dropped from @types/node (v26+). `process.stdin` is the supported
+        // accessor and behaves identically here.
+        const stdin = process.stdin;
         process.stdin.on("data", (char: string) => {
             char = char + "";
             switch (char) {

@@ -10,6 +10,7 @@ import consola from "consola";
 import { Collection, GuildTextBasedChannel, Message } from "discord.js";
 import { get_msg_content, save_msg_to_db } from "./messageServices";
 import { fetch_channels } from "./channelServices";
+import { save_channel_to_db } from "./channelNameServices";
 import { guild_id, initial_backup, initial_backup_worker_count } from "../config/config";
 
 let all_channels: GuildTextBasedChannel[] = [];
@@ -62,7 +63,17 @@ export const initial_backup_process = async () => {
             do{
                 if(!channel.messages) break; //this means the channel is a category channel
 
-                fetched_messages = !last_msg ? await channel.messages.fetch({limit: 100}) : await channel.messages.fetch({limit: 100, before: last_msg.id});
+                //persist the channel's name/path so a restore can rebuild it
+                await save_channel_to_db(channel);
+
+                // A transient network error here used to propagate out and kill
+                // the whole scrape. Retry the page fetch, then move on.
+                try{
+                    fetched_messages = !last_msg ? await channel.messages.fetch({limit: 100}) : await channel.messages.fetch({limit: 100, before: last_msg.id});
+                }catch(err: any){
+                    consola.warn(`Failed to fetch a page of messages (${err?.message}); skipping this page.`);
+                    break;
+                }
                 if(fetched_messages.size === 0) break; //incase there is nothing on the response, since the while statement cant pick it up this iteration. maybe I should use a regular while loop, but too lazy
 
                 processed_total += fetched_messages.size;
@@ -71,11 +82,18 @@ export const initial_backup_process = async () => {
 
                 for(let raw_msg of fetched_messages){
                     const msg = raw_msg[1];
-                    
-                    const raw_data = await get_msg_content(msg);
-                    await save_msg_to_db(raw_data)
 
-                    if(raw_data.thread) all_channels.push(raw_data.thread); //making sure we also scrape the threads
+                    // One bad message must never abort the channel, let alone
+                    // the whole backup: log it and keep going.
+                    try{
+                        const raw_data = await get_msg_content(msg);
+                        await save_msg_to_db(raw_data)
+
+                        if(raw_data.thread) all_channels.push(raw_data.thread); //making sure we also scrape the threads
+                    }catch(err: any){
+                        consola.error(`Skipping message ${msg.id}: ${err?.message}`);
+                        continue;
+                    }
                 }
 
                 //logging

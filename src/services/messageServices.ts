@@ -15,6 +15,43 @@ export const fetch_and_save_msgs = async (channelId: string) => {
     }   
 }
 
+/**
+ * Download one attachment with retries.
+ *
+ * The Discord CDN regularly exceeds a 10s connect budget on slow links, and a
+ * single timeout used to propagate up and kill the entire scrape. We now retry
+ * with backoff and give up quietly: a missing attachment is acceptable, an
+ * aborted 40-minute backup is not.
+ */
+const FETCH_ATTEMPTS = 3;
+const FETCH_TIMEOUT_MS = 30_000;
+
+const fetch_attachment = async (url: string): Promise<Buffer | null> => {
+    for(let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt++){
+        try{
+            const response = await fetch(url, {
+                signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+            });
+
+            if(!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const array_buffer = await response.arrayBuffer();
+            if(!array_buffer) return null;
+
+            return Buffer.from(array_buffer);
+        }catch(err: any){
+            const is_last = attempt === FETCH_ATTEMPTS;
+            if(is_last){
+                consola.warn(`Attachment download failed after ${FETCH_ATTEMPTS} attempts (${err?.code || err?.message}) - skipping`);
+                return null;
+            }
+            // exponential backoff: 2s, 4s
+            await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        }
+    }
+    return null;
+}
+
 export const get_msg_content = async (msg: Message) => {
     try{
         
@@ -31,16 +68,15 @@ export const get_msg_content = async (msg: Message) => {
         //fetching attachments
         const attachments_raw = msg.attachments.map(v => v);        
         for(let attachment of attachments_raw){
-            
-            const attachment_data = await (await fetch(attachment.url)).arrayBuffer();
-            if(!attachment_data) continue;
+            const buffer = await fetch_attachment(attachment.url);
 
-            const buffer = Buffer.from(attachment_data);
+            //non-fatal: keep the message text even if the attachment is lost
+            if(!buffer) continue;
+
             const [raw_name, extension] = attachment.name.split(".");
-
             const name = `${raw_name}__${Date.now()}.${extension}`;
 
-           data.attachments.set(name, buffer);
+            data.attachments.set(name, buffer);
         }
 
 
